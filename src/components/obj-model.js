@@ -7,7 +7,8 @@ var warn = debug('components:obj-model:warn');
 module.exports.Component = registerComponent('obj-model', {
   schema: {
     mtl: {type: 'model'},
-    obj: {type: 'model'}
+    obj: {type: 'model'},
+    renderOrder: {default: 0}
   },
 
   init: function () {
@@ -51,6 +52,7 @@ module.exports.Component = registerComponent('obj-model', {
         objLoader.setMaterials(materials);
         objLoader.load(objUrl, function (objModel) {
           self.model = objModel;
+          objModel.renderOrder = self.data.renderOrder;
           el.setObject3D('mesh', objModel);
           el.emit('model-loaded', {format: 'obj', model: objModel});
         });
@@ -70,6 +72,7 @@ module.exports.Component = registerComponent('obj-model', {
         });
       }
 
+      objModel.renderOrder = self.data.renderOrder;
       self.model = objModel;
       el.setObject3D('mesh', objModel);
       el.emit('model-loaded', {format: 'obj', model: objModel});

@@ -9,7 +9,7 @@ var shouldCaptureKeyEvent = utils.shouldCaptureKeyEvent;
 var CLAMP_VELOCITY = 0.00001;
 var MAX_DELTA = 0.2;
 var KEYS = [
-  'KeyW', 'KeyA', 'KeyS', 'KeyD',
+  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyX', 'KeyC',
   'ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown'
 ];
 
@@ -27,6 +27,8 @@ module.exports.Component = registerComponent('wasd-controls', {
     fly: {default: false},
     wsAxis: {default: 'z', oneOf: ['x', 'y', 'z']},
     wsEnabled: {default: true},
+    xcAxis: {default: 'y', oneOf: ['x', 'y', 'z']},
+    xcEnabled: {default: true},
     wsInverted: {default: false}
   },
 
@@ -34,6 +36,7 @@ module.exports.Component = registerComponent('wasd-controls', {
     // To keep track of the pressed keys.
     this.keys = {};
     this.velocity = new THREE.Vector3();
+    this.dir = new THREE.Vector3();
 
     // Bind methods and add event listeners.
     this.onBlur = bind(this.onBlur, this);
@@ -48,18 +51,26 @@ module.exports.Component = registerComponent('wasd-controls', {
     var data = this.data;
     var el = this.el;
     var velocity = this.velocity;
+    var dir = this.dir;
 
-    if (!velocity[data.adAxis] && !velocity[data.wsAxis] &&
+    if (!velocity[data.adAxis] && !velocity[data.wsAxis] && !velocity[data.xcAxis] &&
         isEmptyObject(this.keys)) { return; }
 
     // Update velocity.
     delta = delta / 1000;
     this.updateVelocity(delta);
 
-    if (!velocity[data.adAxis] && !velocity[data.wsAxis]) { return; }
+    if (!velocity[data.adAxis] && !velocity[data.wsAxis] && !velocity[data.xcAxis]) { return; }
 
     // Get movement vector and translate position.
-    el.object3D.position.add(this.getMovementVector(delta));
+    el.object3D.getWorldDirection(dir);
+    // el.object3D.position.add( dir.multiply(velocity));
+    el.object3D.position.addScaledVector(dir, velocity[data.wsAxis] * delta);
+
+    let movement = this.getMovementVector(delta)
+    el.object3D.position.y += movement.y;
+    el.object3D.position.x += movement.x;
+    el.object3D.position.z += movement.z;
   },
 
   remove: function () {
@@ -85,14 +96,17 @@ module.exports.Component = registerComponent('wasd-controls', {
     var velocity = this.velocity;
     var wsAxis;
     var wsSign;
+    var xcAxis;
 
     adAxis = data.adAxis;
     wsAxis = data.wsAxis;
+    xcAxis = data.xcAxis;
 
     // If FPS too low, reset velocity.
     if (delta > MAX_DELTA) {
       velocity[adAxis] = 0;
       velocity[wsAxis] = 0;
+      velocity[xcAxis] = 0;
       return;
     }
 
@@ -103,10 +117,13 @@ module.exports.Component = registerComponent('wasd-controls', {
     if (velocity[wsAxis] !== 0) {
       velocity[wsAxis] -= velocity[wsAxis] * data.easing * delta;
     }
-
+    if (velocity[xcAxis] !== 0) {
+      velocity[xcAxis] -= velocity[xcAxis] * data.easing * delta;
+    }
     // Clamp velocity easing.
     if (Math.abs(velocity[adAxis]) < CLAMP_VELOCITY) { velocity[adAxis] = 0; }
     if (Math.abs(velocity[wsAxis]) < CLAMP_VELOCITY) { velocity[wsAxis] = 0; }
+    if (Math.abs(velocity[xcAxis]) < CLAMP_VELOCITY) { velocity[xcAxis] = 0; }
 
     if (!data.enabled) { return; }
 
@@ -122,6 +139,9 @@ module.exports.Component = registerComponent('wasd-controls', {
       if (keys.KeyW || keys.ArrowUp) { velocity[wsAxis] -= wsSign * acceleration * delta; }
       if (keys.KeyS || keys.ArrowDown) { velocity[wsAxis] += wsSign * acceleration * delta; }
     }
+
+    if (keys.KeyX) { velocity[xcAxis] -= acceleration * delta; }
+      if (keys.KeyC) { velocity[xcAxis] += acceleration * delta; }
   },
 
   getMovementVector: (function () {
@@ -142,7 +162,7 @@ module.exports.Component = registerComponent('wasd-controls', {
       xRotation = this.data.fly ? rotation.x : 0;
 
       // Transform direction relative to heading.
-      rotationEuler.set(THREE.Math.degToRad(xRotation), THREE.Math.degToRad(rotation.y), 0);
+      rotationEuler.set(THREE.Math.degToRad(xRotation), THREE.Math.degToRad(rotation.y), THREE.Math.degToRad(rotation.z));
       directionVector.applyEuler(rotationEuler);
       return directionVector;
     };
