@@ -9,8 +9,7 @@ var shouldCaptureKeyEvent = utils.shouldCaptureKeyEvent;
 var CLAMP_VELOCITY = 0.00001;
 var MAX_DELTA = 0.2;
 var KEYS = [
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyX', 'KeyC',
-  'ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown'
+  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyX', 'KeyC'
 ];
 
 /**
@@ -24,7 +23,7 @@ module.exports.Component = registerComponent('wasd-controls', {
     adInverted: {default: false},
     easing: {default: 20},
     enabled: {default: true},
-    fly: {default: false},
+    fly: {default: true},
     wsAxis: {default: 'z', oneOf: ['x', 'y', 'z']},
     wsEnabled: {default: true},
     xcAxis: {default: 'y', oneOf: ['x', 'y', 'z']},
@@ -63,11 +62,11 @@ module.exports.Component = registerComponent('wasd-controls', {
     if (!velocity[data.adAxis] && !velocity[data.wsAxis] && !velocity[data.xcAxis]) { return; }
 
     // Get movement vector and translate position.
-    el.object3D.getWorldDirection(dir);
+    // el.object3D.getWorldDirection(dir);
     // el.object3D.position.add( dir.multiply(velocity));
-    el.object3D.position.addScaledVector(dir, velocity[data.wsAxis] * delta);
+    // el.object3D.position.addScaledVector(dir, velocity[data.wsAxis] * delta);
 
-    let movement = this.getMovementVector(delta)
+    const movement = this.getMovementVector(delta);
     el.object3D.position.y += movement.y;
     el.object3D.position.x += movement.x;
     el.object3D.position.z += movement.z;

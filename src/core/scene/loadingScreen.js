@@ -49,12 +49,12 @@ module.exports.setup = function setup (el, getCanvasSize) {
   sphereMesh1 = new THREE.Mesh(sphereGeometry, sphereMaterial);
   sphereMesh2 = sphereMesh1.clone();
   sphereMesh3 = sphereMesh1.clone();
-  camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.0005, 10000);
+  // camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.0005, 10000);
   clock = new THREE.Clock();
   time = 0;
   render = function () {
     raf = sceneEl.effect.requestAnimationFrame(render);
-    sceneEl.effect.render(loaderScene, camera);
+    // sceneEl.effect.render(loaderScene, camera);
     time = clock.getElapsedTime() % 4;
     sphereMesh1.visible = time >= 1;
     sphereMesh2.visible = time >= 2;
@@ -62,21 +62,21 @@ module.exports.setup = function setup (el, getCanvasSize) {
   };
 
   loaderScene.background = new THREE.Color(backgroundColor);
-  loaderScene.add(camera);
+  // loaderScene.add(camera);
   sphereMesh1.position.set(-1, 0, -15);
   sphereMesh2.position.set(0, 0, -15);
   sphereMesh3.position.set(1, 0, -15);
-  camera.add(sphereMesh1);
-  camera.add(sphereMesh2);
-  camera.add(sphereMesh3);
+  // camera.add(sphereMesh1);
+  // camera.add(sphereMesh2);
+  // camera.add(sphereMesh3);
   setupTitle();
 
   // Delay 200ms to avoid loader flashes.
   setTimeout(function () {
     if (sceneEl.hasLoaded) { return; }
-    resize(camera);
+    // resize(camera);
     titleEl.style.display = 'block';
-    window.addEventListener('resize', function () { resize(camera); });
+    // window.addEventListener('resize', function () { resize(camera); });
     render();
   }, 200);
 };

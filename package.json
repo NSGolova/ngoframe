@@ -48,7 +48,7 @@
     "present": "0.0.6",
     "promise-polyfill": "^3.1.0",
     "style-attr": "^1.0.2",
-    "three": "0.95.0",
+    "three": "^0.95.0",
     "three-bmfont-text": "^2.1.0",
     "webvr-polyfill": "^0.10.5"
   },
@@ -83,7 +83,6 @@
     "markserv": "github:sukima/markserv#feature/fix-broken-websoketio-link",
     "minifyify": "^7.3.3",
     "mocha": "^3.0.2",
-    "mozilla-download": "^1.1.1",
     "replace-in-file": "^2.5.3",
     "semistandard": "^9.0.0",
     "shelljs": "^0.7.7",

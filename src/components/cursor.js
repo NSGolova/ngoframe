@@ -44,6 +44,7 @@ module.exports.Component = registerComponent('cursor', {
     fuse: {default: utils.device.isMobile()},
     fuseTimeout: {default: 1500, min: 0},
     upEvents: {default: []},
+    enabled: {default: true},
     rayOrigin: {default: 'entity', oneOf: ['mouse', 'entity']}
   },
 
@@ -72,16 +73,28 @@ module.exports.Component = registerComponent('cursor', {
   },
 
   update: function (oldData) {
+    if (this.data.enabled && !oldData.enabled) {
+      this.addEventListeners();
+    }
+
+    if (!this.data.enabled && oldData.enabled) {
+      this.removeEventListeners();
+    }
+
     if (this.data.rayOrigin === oldData.rayOrigin) { return; }
     this.updateMouseEventListeners();
   },
 
   play: function () {
-    this.addEventListeners();
+    if (this.data.enabled) {
+      this.addEventListeners();
+    }
   },
 
   pause: function () {
-    this.removeEventListeners();
+    if (this.data.enabled) {
+      this.removeEventListeners();
+    }
   },
 
   remove: function () {

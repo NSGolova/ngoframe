@@ -11,6 +11,7 @@ var DEFAULT_CAMERA_ATTR = 'data-aframe-default-camera';
 module.exports.System = registerSystem('camera', {
   init: function () {
     this.activeCameraEl = null;
+    this.additiveCameras = [];
 
     this.render = this.render.bind(this);
     this.unwrapRender = this.unwrapRender.bind(this);
@@ -85,13 +86,6 @@ module.exports.System = registerSystem('camera', {
 
     // Check if camera is appropriate for being the initial camera.
     cameraData = cameraEl.getAttribute('camera');
-    if (!cameraData.active || cameraData.spectator) {
-      // No user cameras eligible, create default camera.
-      if (this.numUserCamerasChecked === this.numUserCameras) {
-        this.createDefaultCamera();
-      }
-      return;
-    }
 
     this.initialCameraFound = true;
     sceneEl.camera = cameraEl.getObject3D('camera');
@@ -222,6 +216,17 @@ module.exports.System = registerSystem('camera', {
    */
   disableSpectatorCamera: function () {
     this.spectatorCameraEl = undefined;
+  },
+
+  removeAdditiveCamera: function (newCameraEl) {
+    this.additiveCameras = this.additiveCameras.filter(el => el != newCameraEl);
+    this.sceneEl.additiveCameras = this.additiveCameras;
+  },
+
+  addAdditiveCamera: function (newCameraEl) {
+    this.additiveCameras.push(newCameraEl);
+
+    this.sceneEl.additiveCameras = this.additiveCameras;
   },
 
   /**

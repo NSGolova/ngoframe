@@ -5,17 +5,17 @@ var THREE = require('../lib/three');
  * Camera component.
  * Pairs along with camera system to handle tracking the active camera.
  */
-module.exports.Component = registerComponent('camera', {
+module.exports.Component = registerComponent('orthographic-camera', {
   schema: {
-    active: {default: true},
+    active: {default: false},
     far: {default: 10000},
     fov: {default: 80, min: 0},
     near: {default: 0.005, min: 0},
-    spectator: {default: false},
-    zoom: {default: 1, min: 0},
     viewportPosition: {default: 0},
     viewport: {default: 4},
-    fullscreen: {default: true},
+    fullscreen: {default: false},
+    frustum: {default: 1.8},
+    aspect: {default: null}
   },
 
   /**
@@ -27,8 +27,15 @@ module.exports.Component = registerComponent('camera', {
     var el = this.el;
 
     // Create camera.
-    camera = this.camera = new THREE.PerspectiveCamera();
+    const aspect = this.data.aspect || (window.innerWidth / window.innerHeight);
+    const frustum = this.data.frustum;
+    camera = this.camera = new THREE.OrthographicCamera(-frustum, frustum, frustum / aspect, -frustum / aspect, this.data.near, this.data.far);
     el.setObject3D('camera', camera);
+
+    const captureThis = this;
+    window.addEventListener('resize', function() {
+        captureThis.update(captureThis.data);
+    });
   },
 
   /**
@@ -37,50 +44,36 @@ module.exports.Component = registerComponent('camera', {
   update: function (oldData) {
     var data = this.data;
     var camera = this.camera;
+    const frustum = data.frustum;
+    const aspect = data.aspect && !data.fullscreen ? data.aspect : (window.innerWidth / window.innerHeight);
 
     // Update properties.
-    camera.aspect = data.aspect || (window.innerWidth / window.innerHeight);
-    camera.far = data.far;
     camera.fov = data.fov;
+    camera.left = -frustum;
+    camera.right = frustum;
+    camera.top = frustum / aspect;
+    camera.bottom = -frustum / aspect;
     camera.near = data.near;
-    camera.zoom = data.zoom;
+    camera.far = data.far;
     camera.updateProjectionMatrix();
 
     this.updateActiveCamera(oldData);
-    this.updateSpectatorCamera(oldData);
   },
 
   updateActiveCamera: function (oldData) {
     var data = this.data;
     var el = this.el;
-    var system = this.system;
-    // Active property did not change.
-    if (oldData && oldData.active === data.active || data.spectator) { return; }
-
-    // If `active` property changes, or first update, handle active camera with system.
-    if (data.active && system.activeCameraEl !== el) {
-      // Camera enabled. Set camera to this camera.
-      system.setActiveCamera(el);
-    } else if (!data.active && system.activeCameraEl === el) {
-      // Camera disabled. Set camera to another camera.
-      system.disableActiveCamera();
-    }
-  },
-
-  updateSpectatorCamera: function (oldData) {
-    var data = this.data;
-    var el = this.el;
-    var system = this.system;
+    var system = el.sceneEl.systems.camera;
     // spectator property did not change.
-    if (oldData && oldData.spectator === data.spectator) { return; }
+    if (oldData && oldData.active === data.active) { return; }
 
     // If `spectator` property changes, or first update, handle spectator camera with system.
-    if (data.spectator && system.spectatorCameraEl !== el) {
+    if (data.active) {
       // Camera enabled. Set camera to this camera.
-      system.setSpectatorCamera(el);
-    } else if (!data.spectator && system.spectatorCameraEl === el) {
+      system.addAdditiveCamera(el);
+    } else if (!data.active) {
       // Camera disabled. Set camera to another camera.
-      system.disableSpectatorCamera();
+      system.removeAdditiveCamera(el);
     }
   },
 

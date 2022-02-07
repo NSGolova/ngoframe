@@ -110,6 +110,9 @@ THREE.VREffect = function( renderer, onError ) {
 
   };
 
+  renderer.autoClear = false;
+  renderer.autoClearColor = false;
+
   // VR presentation
 
   var canvas = renderer.domElement;
@@ -247,7 +250,7 @@ THREE.VREffect = function( renderer, onError ) {
   var cameraR = new THREE.PerspectiveCamera();
   cameraR.layers.enable( 2 );
 
-  this.render = function( scene, camera, renderTarget, forceClear ) {
+  this.render = function( scene, camera, renderTarget, forceClear, cameraData ) {
 
     if ( vrDisplay && scope.isPresenting ) {
 
@@ -391,7 +394,6 @@ THREE.VREffect = function( renderer, onError ) {
         renderer.setRenderTarget( null );
 
       } else {
-
         renderer.setViewport( 0, 0, size.width, size.height );
         renderer.setScissorTest( false );
 
@@ -411,6 +413,32 @@ THREE.VREffect = function( renderer, onError ) {
 
       return;
 
+    }
+
+    var size = renderer.getSize();
+    if (cameraData && cameraData.viewport && cameraData.viewportPosition != null && !cameraData.fullscreen) {
+      
+      var x, y, width = size.width / cameraData.viewport, height = cameraData.aspect ? width / cameraData.aspect : size.height / cameraData.viewport;
+      switch (cameraData.viewportPosition) {
+        case 0: // Top left
+          x = 0; y = 0;
+          break;
+        case 1: // Top right
+          x = size.width - width; y = 0;
+          break;
+        case 2: // Bottom right
+          x = size.width - width; y = size.height - height;
+          break;
+        case 3: // Bottom left
+          x = 0; y = size.height - height;
+          break;
+      
+        default:
+          break;
+      }
+      renderer.setViewport(x, y, width, height );
+    } else {
+      renderer.setViewport( 0, 0, size.width, size.height );
     }
 
     // Regular render mode if not HMD

@@ -42,6 +42,7 @@ module.exports.AScene = registerElement('a-scene', {
         this.isScene = true;
         this.object3D = new THREE.Scene();
         this.render = bind(this.render, this);
+        this.calculate = bind(this.calculate, this);
         this.systems = {};
         this.systemNames = [];
         this.time = this.delta = 0;
@@ -53,10 +54,10 @@ module.exports.AScene = registerElement('a-scene', {
         this.renderTarget = null;
 
         // Default components.
-        this.setAttribute('inspector', '');
-        this.setAttribute('keyboard-shortcuts', '');
-        this.setAttribute('screenshot', '');
-        this.setAttribute('vr-mode-ui', '');
+        // this.setAttribute('inspector', '');
+        // this.setAttribute('keyboard-shortcuts', '');
+        // this.setAttribute('screenshot', '');
+        // this.setAttribute('vr-mode-ui', '');
       }
     },
 
@@ -554,7 +555,9 @@ module.exports.AScene = registerElement('a-scene', {
             if (window.performance) { window.performance.mark('render-started'); }
             sceneEl.clock = new THREE.Clock();
             loadingScreen.remove();
+            sceneEl.calculate();
             sceneEl.render();
+            sceneEl.calculate();
             sceneEl.renderStarted = true;
             sceneEl.emit('renderstart');
           }
@@ -651,7 +654,12 @@ module.exports.AScene = registerElement('a-scene', {
         if (effectComposer) {
           effectComposer.render();
         } else {
-          effect.render(this.object3D, this.camera, this.renderTarget);
+          effect.render(this.object3D, this.camera, this.renderTarget, false, this.camera.el.components.camera.data);
+          if (this.additiveCameras) {
+            this.additiveCameras.forEach(element => {
+              effect.render(this.object3D, element.getObject3D('camera'), this.renderTarget, false, element.components["orthographic-camera"].data);
+            });
+          }
         }
 
         if (this.isPlaying) { this.tock(this.time, this.delta, this.camera); }
@@ -659,6 +667,23 @@ module.exports.AScene = registerElement('a-scene', {
         this.components.overlay && this.components.overlay.render();
 
         effect.submitFrame();
+      },
+      writable: true
+    },
+
+    calculate: {
+      value: function () {
+        var effectComposer = this.effectComposer;
+        var effect = this.effect;
+
+        this.delta = this.clock.getDelta() * 1000;
+        this.time = this.clock.elapsedTime * 1000;
+
+        if (this.isPlaying) { this.tick(this.time, this.delta); }
+
+        effect.requestAnimationFrame(this.calculate);
+
+        if (this.isPlaying) { this.tock(this.time, this.delta, this.camera); }
       },
       writable: true
     }
@@ -748,6 +773,7 @@ function setupCanvas (sceneEl) {
 
   canvasEl = document.createElement('canvas');
   canvasEl.classList.add('a-canvas');
+  canvasEl.classList.add('showControls');
   // Mark canvas as provided/injected by A-Frame.
   canvasEl.dataset.aframeCanvas = true;
   sceneEl.appendChild(canvasEl);

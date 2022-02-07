@@ -202,6 +202,7 @@ var proto = Object.create(ANode.prototype, {
         throw new Error("Trying to add an element that doesn't have an `object3D`");
       }
       this.object3D.add(el.object3D);
+      this.object3D.updateMatrixWorld(true);
       this.emit('child-attached', {el: el});
     }
   },

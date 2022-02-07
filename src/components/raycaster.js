@@ -127,7 +127,14 @@ module.exports.Component = registerComponent('raycaster', {
         : this.removeEventListeners();
     }
 
-    if (oldData.enabled && !data.enabled) { this.clearAllIntersections(); }
+    if (this.data.enabled && !oldData.enabled) {
+      this.addEventListeners();
+    }
+
+    if (!this.data.enabled && oldData.enabled) {
+      this.clearAllIntersections();
+      this.removeEventListeners();
+    }
 
     this.setDirty();
   },
