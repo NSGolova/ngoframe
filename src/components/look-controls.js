@@ -39,7 +39,6 @@ module.exports.Component = registerComponent('look-controls', {
     this.savedPose = null;
     this.pointerLocked = false;
     this.setupMouseControls();
-    this.setupHMDControls();
     this.bindMethods();
 
     this.savedPose = {
@@ -75,7 +74,6 @@ module.exports.Component = registerComponent('look-controls', {
   tick: function (t) {
     var data = this.data;
     if (!data.enabled) { return; }
-    this.controls.update();
     this.updateOrientation();
     this.updatePosition();
   },
@@ -117,17 +115,6 @@ module.exports.Component = registerComponent('look-controls', {
   },
 
   /**
-    * Set up VR controls that will copy data to the dolly.
-  */
-  setupHMDControls: function () {
-    this.dolly = new THREE.Object3D();
-    this.euler = new THREE.Euler();
-    this.hmdQuaternion = new THREE.Quaternion();
-    this.controls = new THREE.VRControls(this.dolly);
-    this.controls.userHeight = 0.0;
-  },
-
-  /**
    * Add mouse and touch event listeners to canvas.
    */
   addEventListeners: function () {
@@ -149,10 +136,6 @@ module.exports.Component = registerComponent('look-controls', {
     canvasEl.addEventListener('touchstart', this.onTouchStart);
     window.addEventListener('touchmove', this.onTouchMove);
     window.addEventListener('touchend', this.onTouchEnd);
-
-    // sceneEl events.
-    sceneEl.addEventListener('enter-vr', this.onEnterVR);
-    sceneEl.addEventListener('exit-vr', this.onExitVR);
 
     // Pointer Lock events.
     if (this.data.pointerLockEnabled) {
@@ -349,21 +332,6 @@ module.exports.Component = registerComponent('look-controls', {
    */
   onTouchEnd: function () {
     this.touchStarted = false;
-  },
-
-  /**
-   * Save pose.
-   */
-  onEnterVR: function () {
-    this.saveCameraPose();
-  },
-
-  /**
-   * Restore the pose.
-   */
-  onExitVR: function () {
-    this.restoreCameraPose();
-    this.previousHMDPosition.set(0, 0, 0);
   },
 
   /**

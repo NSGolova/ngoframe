@@ -53,7 +53,7 @@ module.exports.setup = function setup (el, getCanvasSize) {
   clock = new THREE.Clock();
   time = 0;
   render = function () {
-    raf = sceneEl.effect.requestAnimationFrame(render);
+    raf = sceneEl.mainRenderer.requestAnimationFrame(render);
     // sceneEl.effect.render(loaderScene, camera);
     time = clock.getElapsedTime() % 4;
     sphereMesh1.visible = time >= 1;
@@ -86,7 +86,7 @@ module.exports.remove = function remove () {
   if (!titleEl) { return; }
   // Hide title.
   titleEl.style.display = 'none';
-  sceneEl.effect.cancelAnimationFrame(raf);
+  sceneEl.mainRenderer.cancelAnimationFrame(raf);
 };
 
 function resize (camera) {

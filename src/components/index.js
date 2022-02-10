@@ -5,8 +5,6 @@ require('./collada-model');
 require('./cursor');
 require('./geometry');
 require('./gltf-model');
-require('./hand-controls');
-require('./laser-controls');
 require('./light');
 require('./line');
 require('./link');
@@ -20,7 +18,6 @@ require('./scale');
 require('./shadow');
 require('./sound');
 require('./text');
-require('./tracked-controls');
 require('./visible');
 require('./wasd-controls');
 
